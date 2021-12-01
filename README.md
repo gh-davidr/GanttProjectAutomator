@@ -29,5 +29,5 @@ GanttProjectAutomator is a utility conceived from years of project management ex
 | **Every 10 minutes, 24x7** | runGPA\_all.sh | Reads the sender email inbox looking for the following:
 - Task updates (eg &quot;I&#39;m 50% complete&quot;)
 - Requests (eg help, remind, summary)
- |
+|
 | **08:00 Sunday** | runGPA\_summarise.sh | Sends a project summary to the configured project manager |
