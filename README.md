@@ -19,12 +19,12 @@ GanttProjectAutomator is a utility conceived from years of project management ex
 - Is stateless
   - Uses the GanttProject file to define project state and drive actions
   - Also uses emails to identify triggers to act and also for markers to know what&#39;s been processed before
-- Intended for use in a scheduled environment (for example, using &quot;cron&quot; or &quot;taskschd&quot;) to look notify new tasks starting each day and to handle responses and requests.
+- Intended for use in a scheduled environment (for example, using &quot;cron&quot; or &quot;taskschd&quot;) to look for and notify new tasks starting each day and to handle responses and requests.
 
 ## Typical Use
 
 | **Schedule** | **Command** | **Description** |
 | --- | --- | --- |
 | **08:00 daily** | runGPA\_notify.sh | Uses a configured sender email address to notify all assignees of tasks due to start that day.Also sends repeat notifications for tasks with past start date and zero progress |
-| **Every 10 minutes, 24x7** | runGPA\_all.sh | Reads the sender email inbox looking for task updates (eg &quot;I&#39;m 50% complete&quot;), or requests (eg help, remind, summary)
+| **Every 10 minutes, 24x7** | runGPA\_all.sh | Reads the sender email inbox looking for task updates (eg &quot;I&#39;m 50% complete&quot;), or requests (eg help, remind, summarise)
 | **08:00 Sunday** | runGPA\_summarise.sh | Sends a project summary to the configured project manager |
