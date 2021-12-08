@@ -1,0 +1,116 @@
+# Properties file
+!!org.richardson.david.config.UserConfig
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings controlling each of the three modes:
+  #
+  #  notify    - (Finds tasks that start "today" or in the past with no progress and email notifies the assignees)
+  #  update    - (Based on the response of an assignee to a notification email, update the progress accoridingly)
+  #  remind    - (Generate a summary of tasks (not started, in progress, upcoming) in response to an email request)
+  #  summarise - (Generate a summary of tasks (not started, in progress, upcoming) for the PM to view)
+  #
+  # -------------------------------------------------------------------------------------------------------------
+
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings common to each of the three modes:
+  #
+  # -------------------------------------------------------------------------------------------------------------
+  common:
+    # xmlPath - this is the core project file that's read and updated by each modes
+    xmlPath: 'C:\\Temp\\HouseBuildingSample.gan'
+    mail:
+      sendHost : smtp.gmail.com
+      sendPort : 465
+      readHost : imap.gmail.com
+      username : david@gmail.com
+      password : app_password_of_course
+    #  Used for signature of automated emails
+    notifier : Home Automation
+    
+    # Uniquely identifies emails relating to-Five\Planning\Gantt
+    emailSignature : "{Reserved Token for Project HouseBuilding}"
+    # Only email recipients in this list will be generated
+    allowedRecipients : 
+    blockedRecipients : 
+
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings for notify:
+  #
+  #  notify    - (Finds tasks that start "today" or in the past with no progress and email notifies the assignees)
+  #
+  # -------------------------------------------------------------------------------------------------------------
+  notify:
+    # minsBack - for efficiency, only look back through emails this many minutes back.  Set based on scheduling interval
+    # retries - not used
+    # precision -
+    # notifications - When notifications get sent for tasks not started during their scheduled date range
+    # includeParentTasks - Only include details of lowest level tasks if set to false
+    minsBack : 2160
+    retries : 0
+    precision : 5
+    notifications : "always"
+    includeParentTasks : false
+    
+ 
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings for update:
+  #
+  #  update    - (Based on the response of an assignee to a notification email, update the progress accoridingly)
+  #
+  # -------------------------------------------------------------------------------------------------------------
+  update:
+    # backups       - As the update mode launches, it creates a back up of the project with date/time in filename in this folder before making any changes
+    #                 If no changes are needed, then the backup is deleted thus ensuring backups are only generated when the file is changed.
+    # assigneesOnly - If true then email responses only from assignees of the task is allowed
+    # alertEmail    - Who to forward any emails that try to update but are not allowed
+    # includeParentTasks - Only include details of lowest level tasks if set to false
+    backups: 'c:\temp'
+    assigneesOnly : true
+    alertEmail : david@gmail.com
+    includeParentTasks : false
+
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings for reminder:
+  #
+  #  remind    - (Generate a summary of tasks (not started, in progress, upcoming) in response to an email request)
+  #
+  # -------------------------------------------------------------------------------------------------------------
+  remind:
+    # projectManager    - Who to send task summary notification
+    # summaryFutureDays - For the upcoming tasks section of report, how far into the future to look
+    # includeParentTasks - Only include details of lowest level tasks if set to false
+    summaryFutureDays : 14
+    includeParentTasks : false
+    
+
+  # -------------------------------------------------------------------------------------------------------------
+  # 
+  # GanttProjectAutomator
+  #
+  # Settings for summary:
+  #
+  #  summarise - (Generate a summary of tasks (not started, in progress, upcoming) for the PM to view)
+  #
+  # -------------------------------------------------------------------------------------------------------------
+  summarise:
+    # projectManager    - Who to send task summary notification
+    # summaryFutureDays - For the upcoming tasks section of report, how far into the future to look
+     # includeParentTasks - Only include details of lowest level tasks if set to false
+    projectManager : david@gmail.com
+    summaryFutureDays : 14
+    includeParentTasks : false
+    
