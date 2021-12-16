@@ -55,7 +55,7 @@ GanttProjectAutomator is a utility conceived from years of project management ex
  - Download JAR file to an install folder
  - Download run scripts to the install folder
    - The scripts will need modifying to reference the install folder and also the yml file
- - Decide on scheduling strategy.  Recommended scheduling as described in **[Typical Use](Readme#Typical-Use)** above
+ - Decide on scheduling strategy.  Recommended scheduling as described in **[Typical Use](https://github.com/gh-davidr/GanttProjectAutomator#typical-use)** above
 
 ## YML File
 
