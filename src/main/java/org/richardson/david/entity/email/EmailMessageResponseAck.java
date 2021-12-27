@@ -72,7 +72,7 @@ public class EmailMessageResponseAck extends EmailMessageBaseTask
 			//			Date sent = message.getSentDate();
 
 			Message replyMessage =(MimeMessage) message.reply(false);
-			replyMessage.setFrom(new InternetAddress(toString));
+			replyMessage.setFrom(new InternetAddress(SendEmailSession.getInstance().getFrom())); 
 
 			//			MimeMessage orig = (MimeMessage) message;
 			//			StringBuffer buffer = new StringBuffer(" Thank you for the task update summarised in the acknowledgement below: \n\n "

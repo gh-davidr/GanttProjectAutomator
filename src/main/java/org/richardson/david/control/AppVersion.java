@@ -27,5 +27,5 @@ import lombok.Getter;
 public class AppVersion 
 {
 	@Getter private static String appNameString = "GanttProjectAutomator";
-	@Getter private static String versionString = "v0.1 (Build Dec 2021)";
+	@Getter private static String versionString = "v0.2 (Build Dec 2021)";
 }
