@@ -1,5 +1,9 @@
 # GanttProjectAutomator
-GanttProjectAutomator is a utility conceived from years of project management experience to make the communication of task status just a little bit easier.
+GanttProjectAutomator is an automated communication utility for users of [Gantt Project](https://www.ganttproject.biz/) - the free desktop project scheduling application.
+
+It was conceived from years of project management experience to make team communication of task status just a little bit easier.  Using email and a scheduler, it alerts assignees of project tasks and also updates the GanttProject file based on assignees' email replies.
+
+Project task assignments can now easily be viewed and updates provided via mobile phones, freeing task assignees from having to interact with the PM or the [Gantt Project](https://www.ganttproject.biz/) file directly.
 
 ## Summary
 
