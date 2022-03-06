@@ -25,6 +25,10 @@ package utils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.jupiter.api.Assertions;
 
 public class UtilsForTests {
@@ -55,4 +59,16 @@ public class UtilsForTests {
 		Assertions.assertFalse(file.exists());
 	}
 	
+	public static Date createDate(String strDate, String format)
+	{
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+		Date result = null;
+		try {
+			result = simpleDateFormat.parse(strDate);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
 }

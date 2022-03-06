@@ -19,15 +19,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 See <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.richardson.david.utils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,11 @@ public class AppUtils {
 
 	private static Pattern NAME_EMAIL_PATTERN   = Pattern.compile("(.*)<([\\w-\\@.]*)>");
 	private static Pattern JUST_EMAIL_PATTERN   = Pattern.compile("([\\w@\\.-]*)");
+
+	private static final List<Integer> NON_BUSINESS_DAYS = Arrays.asList(
+			Calendar.SATURDAY,
+			Calendar.SUNDAY
+			);
 
 	public static String getDateStr(Date date)
 	{
@@ -72,7 +79,27 @@ public class AppUtils {
 		result = diffMillies / (1000 * 60 * 60 * 24);
 
 		return result;
-	}	
+	}
+
+	public static Date addBusinessDaysToDate(Date dt, Long businessDays)
+	{
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(dt);
+		for (int i = 0; i < Math.abs(businessDays);) 
+		{
+			// here, all days are added/subtracted
+			calendar.add(Calendar.DAY_OF_MONTH, businessDays > 0 ? 1 : -1);
+
+			// but at the end it goes to the correct week day.
+			// because i is only increased if it is a week day
+			if (!NON_BUSINESS_DAYS.contains(calendar.get(Calendar.DAY_OF_WEEK)))
+			{
+				i++;
+			}
+		}
+		return calendar.getTime();
+	}
+
 	public static Date addDaysToDate(Date dt, Long numDays)
 	{
 		return addDaysToDate(dt, numDays.intValue());
@@ -152,7 +179,7 @@ public class AppUtils {
 				if (numbers.length == 2) {
 					BigDecimal d1 = BigDecimal.valueOf(Double.valueOf(numbers[0]));
 					BigDecimal d2 = BigDecimal.valueOf(Double.valueOf(numbers[1]));
-					BigDecimal response = d1.divide(d2, MathContext.DECIMAL128);
+					BigDecimal response = numbers[1].equals("0") ? BigDecimal.valueOf(0.0) : d1.divide(d2, MathContext.DECIMAL128);
 					d = response.doubleValue();
 				}
 			}
@@ -195,7 +222,7 @@ public class AppUtils {
 	{
 		return str == null ? null : str.toLowerCase();
 	}
-	
+
 	private static String handleStringPattern(String string, Pattern pattern, int group)
 	{
 		String result = null;

@@ -75,6 +75,7 @@ public class Repository
 		if (m_Instance == null)
 		{
 			m_Instance = new Repository(project);
+			m_Instance.createEnrichDepends();
 		}
 		return m_Instance;
 	}
@@ -272,7 +273,12 @@ public class Repository
 
 		return resultEnrichedResource;
 	}
-
+	
+	public void summarise()
+	{
+		EnrichedTask.initializeSummary();
+		this.orderedEnrichedTaskList.forEach(t -> System.out.print(t.summariseTask()));
+	}
 
 	private ArrayList<EnrichedTask> getEnrichedTasksRelativeToDate(Date date, DateComparison dateComparison, Boolean onlyNotStarted, Resource resource)
 	{
@@ -318,7 +324,7 @@ public class Repository
 		project.getTasks().getTasks().forEach(t -> hashTask(t));
 		LOGGER.debug("Repository - Loaded: " + enrichedTaskHashMap.size() + " tasks" );
 		orderedEnrichedTaskList.sort((s1, s2) -> s1.getStartDate().compareTo(s2.getStartDate()));
-
+		
 		project.getResources().getResources().forEach(r -> hashResource(r));
 		LOGGER.debug("Repository - Loaded: " + enrichedResourceHashMap.size() + " resources" );
 
@@ -329,6 +335,12 @@ public class Repository
 			addAllocation(a, allocationResourceIdHashMap, a.getResourceId());	
 		});
 		LOGGER.debug("Repository - Loaded: " + project.getAllocations().getAllocations().size() + " allocations" );
+	}
+	
+	private void createEnrichDepends()
+	{
+		// Now all enriched tasks are created, iterate over each to populate dependencies
+		orderedEnrichedTaskList.forEach(t -> t.getEnrichedDepends());
 	}
 
 	private void hashTask(Task task)

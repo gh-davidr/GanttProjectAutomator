@@ -72,8 +72,8 @@ public class ProjectComparator
 	
 	private Boolean compareStrings()
 	{
-		String project1String = project1.toString();
-		String project2String = project2.toString();
+		String project1String = project1.toString().strip();
+		String project2String = project2.toString().strip();
 		
 		return project1String.equals(project2String);
 	}

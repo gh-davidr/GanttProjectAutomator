@@ -19,7 +19,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 See <http://www.gnu.org/licenses/>.
-*/
+ */
+
 package loadTests;
 
 import org.junit.jupiter.api.Assertions;
@@ -28,22 +29,24 @@ import org.richardson.david.entity.gantt.Project;
 import org.richardson.david.load.DataLoader;
 import org.richardson.david.load.DataSaver;
 import org.richardson.david.model.Repository;
-
-import controlTests.TestCommandLine;
 import emailTests.TestResponseEmailParser;
 import utils.ProjectComparator;
 import utils.UtilsForTests;
 
-public class TestLoadAndSave {
+public class TestLoadAndSave extends TestLoadBase
+{
 
 	//	private static TestResponseEmailParser testResponseEmailParser = new TestResponseEmailParser();
 	private static TestResponseEmailParser testResponseEmailParser = new TestResponseEmailParser();
-
 
 	@Test
 	public void testLoadAndSaveAndDelete()
 	{		
 		DataSaver dataSaver = createDataSaver();
+		System.out.println("****************************************************************");
+		System.out.println("Producing a summarised report from the Project Repository");
+		Repository.getInstance().summarise();
+		System.out.println("****************************************************************");
 		Assertions.assertTrue(dataSaver != null);
 		String backupFileString = dataSaver.getBackupFileName();
 		UtilsForTests.assertFileExists(backupFileString);
@@ -52,7 +55,7 @@ public class TestLoadAndSave {
 		dataSaver.deleteBackup();
 		UtilsForTests.assertFileDoesntExist(backupFileString);
 	}
-	
+
 	@Test
 	public void testChangeTaskAndUpdate()
 	{
@@ -60,34 +63,31 @@ public class TestLoadAndSave {
 		Assertions.assertTrue(dataSaver != null);
 		String backupFileString = dataSaver.getBackupFileName();
 		UtilsForTests.assertFileExists(backupFileString);
-		
+
 		testResponseEmailParser.doTest("half done", false, 50L);
 		dataSaver.updateFile();
 		dataSaver.deleteBackup();
 		UtilsForTests.assertFileDoesntExist(backupFileString);		
 	}
 
-	public DataSaver createDataSaver()
-	{
-		TestCommandLine testCommandLine = new TestCommandLine();		
-		DataLoader dataLoader = new DataLoader(testCommandLine.getProjectFilePath());
-		Assertions.assertTrue(dataLoader.getProject() != null);
-		
-		DataSaver dataSaver = new DataSaver(dataLoader);
-		String backupFileString = dataSaver.getBackupFileName();
-		dataSaver.backupFile();
-		UtilsForTests.assertFileExists(backupFileString);
-		return dataSaver;
-	}
-	
 	private void compareBackupFileWithOriginal(String backupString)
 	{
 		DataLoader backupDataLoader = new DataLoader(backupString);
 		Project mainProject = Repository.getInstance().getProject();
 		Project backProject = backupDataLoader.getProject();
-		
+
 		ProjectComparator projectComparator = new ProjectComparator(mainProject, backProject);
-		Assertions.assertTrue(projectComparator.areTheySame());		
+		Assertions.assertTrue(projectComparator.areTheySame(),
+				"Expect Main Project and Backup Project to be same: \n"
+						+ "************************************************\n"
+						+ " M A I N   P R O J E C T\n\n"
+						+ mainProject.toString()
+						+ "************************************************\n"
+						+ "\n \n"
+						+ "************************************************\n"
+						+ " B A C K U P   P R O J E C T\n\n"
+						+ backProject.toString()
+						+ "\n \n"
+				);
 	}
-		
 }

@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 See <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.richardson.david.model;
 
 import java.text.ParseException;
@@ -27,13 +27,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
 import org.richardson.david.config.UserConfig;
 import org.richardson.david.entity.gantt.Allocation;
+import org.richardson.david.entity.gantt.Depend;
 import org.richardson.david.entity.gantt.Resource;
 import org.richardson.david.entity.gantt.Task;
 import org.richardson.david.utils.AppUtils;
@@ -51,13 +51,27 @@ public class EnrichedTask
 	private static Logger LOGGER = LoggerFactory.getLogger(EnrichedTask.class);
 	private static final SimpleDateFormat SD_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
+	private static HashMap<String, EnrichedTask> SUMMARISED_TASK_HASHMAP = new HashMap<>();
+
 	@NonNull private Task task;
 
 	@Getter(lazy=true) private final ArrayList<Resource> resources = initResources();	
+	@Getter(lazy=true) private final ArrayList<EnrichedDepend> enrichedDepends = initEnrichedDepends();	
 	@Getter(lazy=true) private final HashMap<String, Resource> resourceHashMap = initResourceHashMap();	
 	@Getter(lazy=true) private final Date startDate = initStartDate();
 	@Getter(lazy=true) private final Date endDate = initEndDate();
 	@Getter(lazy=true) private final Long numDescendants = initNumDescendants(); 
+	@Getter(lazy=true) private final ArrayList<EnrichedTask> nonStartedFSPredecessorTasks = initNonStartedFSPredecessorTasks();
+
+	// As
+	@Getter private ArrayList<EnrichedDepend> enrichedDependsPredecessors = new ArrayList<EnrichedDepend>();
+
+
+	public static void initializeSummary()
+	{
+		SUMMARISED_TASK_HASHMAP.clear();
+	}
+
 
 	public Long getCompleteLong()
 	{
@@ -89,20 +103,77 @@ public class EnrichedTask
 
 		return resultBoolean;
 	}
+
+	public Boolean shouldTaskBeNotified()
+	{		
+		Boolean resultBoolean = true;
+
+		// If the task has child tasks and no option is set to include parent tasks, then don't notify 
+		resultBoolean = (!UserConfig.getInstance().getNotify().getIncludeParentTasks()
+				&& getNumDescendants() > 0) ? false : resultBoolean ;
+		
+		// If the task has any predecessor tasks with Finish-To-Start relationship to this one that
+		// has not started, and no option set to include such tasks, then again don't notify
+		resultBoolean = (!UserConfig.getInstance().getNotify().getIncludeNonStartedFSPredecessors() 
+				&& getNonStartedFSPredecessorTasks().size() > 0) ? false : resultBoolean;
+		
+		return resultBoolean;
+	}
 	public String summariseTask()
 	{
-		StringBuilder stringBuilder = new StringBuilder();
+		return summariseTask("");
+	}
+	public String summariseTask(String hdr)
+	{
+		String resultString = "";
 
-		stringBuilder.append(""
-				+ "Id: " + getTask().getId()
-				+ " Name: " + getTask().getName()
-				+ " Start: " + getStartDate()
-				+ " End: " + getEndDate()
-				+ " Progress: " + getTask().getComplete() + "%"
-				+ " Resource" + (getResources().size() != 1 ? "s" : "") + getResourceEmails()
-				);
+		if (SUMMARISED_TASK_HASHMAP.get(getTask().getId()) == null)
+		{
+			SUMMARISED_TASK_HASHMAP.put(getTask().getId(), this);
 
-		return stringBuilder.toString();
+			StringBuilder stringBuilder = new StringBuilder();
+
+			stringBuilder.append(hdr
+					+ "Id: " + getTask().getId()
+					+ " Name: " + getTask().getName()
+					+ " Start: " + getStartDate()
+					+ " End: " + getEndDate()
+					+ " Progress: " + getTask().getComplete() + "%"
+					+ " Resource" + (getResources().size() != 1 ? "s: " : ": ") + getResourceEmails()
+					);
+
+			// Now show break down by composition
+			if (getEnrichedDependsPredecessors().size() > 0)
+			{
+				stringBuilder.append(hdr
+						+ " Predecessor" + (getEnrichedDependsPredecessors().size() > 1 ? "s" : "") + ": "
+						);
+				getEnrichedDependsPredecessors().forEach(d -> 
+				{
+					stringBuilder.append(
+							"(Id:"	+ d.getSrcEnrichedTask().getTask().getId() 
+							+ " Type:" + d.getDepend().getType()
+							+ " Diff:" + d.getDepend().getDifference()
+							+ " Hard:" + d.getDepend().getHardness()
+							+ ") ");
+				});
+
+			}
+			stringBuilder.append("\n");
+
+			if (this.getNumDescendants() > 1L)
+			{
+				task.getTasks().forEach(t ->
+				{
+					EnrichedTask enrichedTask = Repository.getInstance().getEnrichedTaskHashMap().get(t.getId());
+					stringBuilder.append(enrichedTask.summariseTask(hdr + "  "));
+				});
+			}			
+
+			resultString = stringBuilder.toString();
+		}
+
+		return resultString;
 	}
 	private String getResourceEmails()
 	{
@@ -129,14 +200,35 @@ public class EnrichedTask
 		}
 		return resultArrayList;
 	}
-	
+
+	private ArrayList<EnrichedDepend> initEnrichedDepends()
+	{
+		ArrayList<EnrichedDepend> resultArrayList = new ArrayList<EnrichedDepend>();
+
+		ArrayList<Depend> arrayList = task.getDepends();
+		if (arrayList != null)
+		{
+			arrayList.forEach(d ->
+			{
+				EnrichedDepend enrichedDepend = new EnrichedDepend(d, this);
+				resultArrayList.add(enrichedDepend);
+
+				// Add relationship the other way too..
+				EnrichedTask enrichedTask = Repository.getInstance().getEnrichedTaskHashMap().get(d.getId());
+				enrichedTask.getEnrichedDependsPredecessors().add(enrichedDepend);
+			});
+		}
+
+		return resultArrayList;
+	}
+
 	private HashMap<String, Resource> initResourceHashMap()
 	{
 		HashMap<String, Resource> result = new HashMap<String, Resource>();
 		getResources().forEach(r -> result.put(r.getId(), r));
 		return result;
 	}
-	
+
 	private Date initStartDate()
 	{
 		Date resultDate = null;
@@ -179,4 +271,33 @@ public class EnrichedTask
 		}
 		return resultLong;
 	}
+
+	private ArrayList<EnrichedTask> initNonStartedFSPredecessorTasks()
+	{
+		ArrayList<EnrichedTask> result = new ArrayList<EnrichedTask>();
+
+		addNonStartedFSPredecessorTasks(result);
+
+		return result;
+	}
+
+	private void addNonStartedFSPredecessorTasks(ArrayList<EnrichedTask> list)
+	{
+		// Iterate through the predecessors
+
+		getEnrichedDependsPredecessors().forEach(d -> 
+		{
+			EnrichedTask predecEnrichedTask = d.getSrcEnrichedTask();
+			if (d.expectPredecessorComplete())
+			{
+				if (predecEnrichedTask.getTask().getCompleteLong() == 0)
+				{
+					list.add(predecEnrichedTask);
+				}
+			}
+			predecEnrichedTask.addNonStartedFSPredecessorTasks(list);
+		});
+
+	}
+
 }
