@@ -127,6 +127,12 @@ public class EmailMessageSummary extends EmailMessageBase
 		sBuilder.append(addTaskTable(getNotStartedEnrichedTasks(), 
 				"<p class=MsoNormal><b>Table below lists all tasks with start date in the past and zero progress:</b><o:p></o:p></p>\r\n"
 				, "<p class=MsoNormal><b>There are no tasks with start date in the past and zero progress.</b><o:p></o:p></p>\r\n"));
+		
+		// Add commentary about suppressing not-started tasks with predecessors that haven't started too.
+		if (!UserConfig.getInstance().getNotify().getIncludeNonStartedFSPredecessors())
+		{
+			sBuilder.append("<br><b>Note: Option is set to NOT notify tasks where predecessor tasks themselves have not started.</b>");
+		}
 
 		sBuilder.append(addTaskTable(getUpdatedEnrichedTasks(), 
 				"<p class=MsoNormal><b>Table below lists all tasks that are currently \"In Progress\":</b><o:p></o:p></p>\r\n"

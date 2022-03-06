@@ -164,6 +164,16 @@ public class EmailMessageBase {
 				+ "  accent1;mso-border-bottom-alt:solid #4F81BD .5pt;mso-border-bottom-themecolor:\r\n"
 				+ "  accent1;background:#4F81BD;mso-background-themecolor:accent1;padding:0cm 5.4pt 0cm 5.4pt'>\r\n"
 				+ "  <p class=MsoNormal align=center style='mso-yfti-cnfc:1'><b><span style='color:white;\r\n"
+				+ "  mso-themecolor:background1'>Predecessors<o:p></o:p></span></b></p>\r\n"
+				+ "  </td>\r\n"
+				
+				//				+ "  <td width=125 style='width:93.5pt;border-top:solid #4F81BD 1.0pt;mso-border-top-themecolor:\r\n"
+				+ "  <td width=125 style='width:75pt;border-top:solid #4F81BD 1.0pt;mso-border-top-themecolor:\r\n"
+				+ "  accent1;border-left:none;border-bottom:solid #4F81BD 1.0pt;mso-border-bottom-themecolor:\r\n"
+				+ "  accent1;border-right:none;mso-border-top-alt:solid #4F81BD .5pt;mso-border-top-themecolor:\r\n"
+				+ "  accent1;mso-border-bottom-alt:solid #4F81BD .5pt;mso-border-bottom-themecolor:\r\n"
+				+ "  accent1;background:#4F81BD;mso-background-themecolor:accent1;padding:0cm 5.4pt 0cm 5.4pt'>\r\n"
+				+ "  <p class=MsoNormal align=center style='mso-yfti-cnfc:1'><b><span style='color:white;\r\n"
 				+ "  mso-themecolor:background1'>Progress<o:p></o:p></span></b></p>\r\n"
 				+ "  </td>\r\n"
 
@@ -233,6 +243,10 @@ public class EmailMessageBase {
 		String taskIdString    = et.getTask().getId();
 		String taskNameString  = et.getTask().getName();
 		String subTasks = et.getNumDescendants() == 0L ? "-" : et.getNumDescendants().toString();
+		StringBuffer sb = new StringBuffer();
+		et.getEnrichedDependsPredecessors().forEach(d -> { sb.append(d.getDepend().getId()); });
+		String predecessors = sb.toString();
+
 		String completeString  = complString.equals("0") ? "Not Started" : complString + "% complete";
 		String startDateString = now.compareTo(et.getStartDate()) == 0 
 				? "Today <br>" + AppUtils.getDateStr(et.getStartDate()) 
@@ -280,6 +294,19 @@ public class EmailMessageBase {
 				+ "  mso-background-themetint:51;padding:0cm 5.4pt 0cm 5.4pt'>\r\n"
 				+ "  <p class=MsoNormal align=center style='mso-yfti-cnfc:64'><span style='color:black;\r\n"
 				+ "  mso-color-alt:windowtext'>" + subTasks + "</span><o:p></o:p></p>\r\n"
+				+ "  </td>\r\n"
+				//				+ "  <td width=125 style='width:93.5pt;border-top:none;border-left:none;\r\n"
+				+ "  <td width=125 style='width:60pt;border-top:none;border-left:none;\r\n"
+				+ "  border-bottom:solid #95B3D7 1.0pt;mso-border-bottom-themecolor:accent1;\r\n"
+				+ "  mso-border-bottom-themetint:153;border-right:solid #95B3D7 1.0pt;mso-border-right-themecolor:\r\n"
+				+ "  accent1;mso-border-right-themetint:153;mso-border-top-alt:solid #95B3D7 .5pt;\r\n"
+				+ "  mso-border-top-themecolor:accent1;mso-border-top-themetint:153;mso-border-left-alt:\r\n"
+				+ "  solid #95B3D7 .5pt;mso-border-left-themecolor:accent1;mso-border-left-themetint:\r\n"
+				+ "  153;mso-border-alt:solid #95B3D7 .5pt;mso-border-themecolor:accent1;\r\n"
+				+ "  mso-border-themetint:153;background:#DBE5F1;mso-background-themecolor:accent1;\r\n"
+				+ "  mso-background-themetint:51;padding:0cm 5.4pt 0cm 5.4pt'>\r\n"
+				+ "  <p class=MsoNormal align=center style='mso-yfti-cnfc:64'><span style='color:black;\r\n"
+				+ "  mso-color-alt:windowtext'>" + predecessors + "</span><o:p></o:p></p>\r\n"
 				+ "  </td>\r\n"
 				//				+ "  <td width=125 style='width:93.5pt;border-top:none;border-left:none;\r\n"
 				+ "  <td width=125 style='width:75pt;border-top:none;border-left:none;\r\n"

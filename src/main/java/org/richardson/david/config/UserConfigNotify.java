@@ -39,6 +39,7 @@ public class UserConfigNotify {
 	private Boolean includeParentTasks;
 	private Boolean assigneesAndPMOnly;
 	private String  alertEmail;
+	private Boolean includeNonStartedFSPredecessors;
 
 	public Boolean doNotification(Date start, Date end)
 	{
