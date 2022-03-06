@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 See <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.richardson.david.control;
 
 import java.util.ArrayList;
@@ -40,10 +40,68 @@ import lombok.RequiredArgsConstructor;
 public class AppControlNotify extends AppControlBase {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(AppControlNotify.class);
-	
+
 	@NonNull protected Boolean reportOnlyBoolean;
 
 	public void doNotify()
+	{
+		// 1 Get all tasks due to start today and email
+		Date now = AppUtils.today();
+		ArrayList<EnrichedTask> todaysTasks = getTasksToNotifyStartingToday(now);
+		ArrayList<EmailMessageTaskStart> todaysTaskStarts = new ArrayList<>();
+		todaysTasks.forEach(t -> 
+		{
+			if (reportOnlyBoolean)
+			{
+				LOGGER.info(getRunMode() + "  Task Starting Today: " + t.summariseTask());
+			}
+			else 
+			{
+				EmailMessageTaskStart emailMessage = new EmailMessageTaskStart(t); 
+				emailMessage.sendInitialEmails();
+				todaysTaskStarts.add(emailMessage);
+			}
+		});
+
+		// 2 Get all tasks that have passed already and notify again based on our config
+		ArrayList<EnrichedTask> inFlightTasks = getTasksToNotifyStartedBeforeToday(now);
+		ArrayList<EmailMessageTaskStart> inflightTaskStarts = new ArrayList<>();
+		inFlightTasks.forEach(t ->
+		{
+			Date startDate = t.getStartDate();
+			Date endDate   = AppUtils.addDaysToDate(startDate, t.getDurationLong());
+			// Now get the fraction so we can include in email message too
+			Double fractionForNotificationDouble = UserConfig.getInstance().getNotify().getFractionForNotification(startDate, endDate, now);
+
+			if (reportOnlyBoolean)
+			{
+				LOGGER.info(getRunMode() + "  Task Started in the past: " + t.summariseTask());
+			}
+			else 
+			{
+				EmailMessageTaskStart emailMessage = new EmailMessageTaskStart(t, fractionForNotificationDouble); 
+				emailMessage.sendReminderEmails();
+				inflightTaskStarts.add(emailMessage);
+			}
+		});
+
+		LOGGER.info(getRunMode() + AppVersion.getAppNameString() + "-" + AppVersion.getVersionString());
+		if (reportOnlyBoolean)
+		{
+			LOGGER.info(getRunMode() + "Notifications complete.  Report Only Mode active, so no email notifications actually sent.");
+		}
+		else 
+		{
+			LOGGER.info(getRunMode() + "Notifications complete.  " 
+					+ todaysTaskStarts.size() + " task" + (todaysTaskStarts.size() == 1 ? "" : "s") + " starting today.  "
+					+ inflightTaskStarts.size() + " in-flight task" + (inflightTaskStarts.size() == 1 ? "" : "s") + " with no progress "
+					+ "(Notify tasks with 0 progress at " + UserConfig.getInstance().getNotify().getNotifications() + " through duration)"
+					);
+		}
+	}
+
+
+	public void doNotify_Old()
 	{
 		// 1 Get all tasks due to start today and email
 		Date now = AppUtils.today();
@@ -81,7 +139,7 @@ public class AppControlNotify extends AppControlBase {
 				{
 					// Now get the fraction so we can include in email message too
 					Double fractionForNotificationDouble = UserConfig.getInstance().getNotify().getFractionForNotification(startDate, endDate, now);
-					
+
 					if (reportOnlyBoolean)
 					{
 						LOGGER.info(getRunMode() + "  Task Started in the past: " + t.summariseTask());
@@ -110,5 +168,38 @@ public class AppControlNotify extends AppControlBase {
 					+ "(Notify tasks with 0 progress at " + UserConfig.getInstance().getNotify().getNotifications() + " through duration)"
 					);
 		}
+	}
+
+	public ArrayList<EnrichedTask> getTasksToNotifyStartingToday(Date now)
+	{
+		ArrayList<EnrichedTask> todaysTasks = Repository.getInstance().getTasksStartingOn(now);
+		ArrayList<EnrichedTask> result = new ArrayList<EnrichedTask>();
+		todaysTasks.forEach(t -> 
+		{
+			if (t.shouldTaskBeNotified())
+			{
+				result.add(t);
+			}
+		});
+		return result;
+	}
+
+	public ArrayList<EnrichedTask> getTasksToNotifyStartedBeforeToday(Date now)
+	{
+		ArrayList<EnrichedTask> todaysTasks = Repository.getInstance().getTasksStartingEarlierThan(now);
+		ArrayList<EnrichedTask> result = new ArrayList<EnrichedTask>();
+		todaysTasks.forEach(t -> 
+		{
+			if (t.shouldTaskBeNotified())
+			{
+				Date startDate = t.getStartDate();
+				Date endDate   = AppUtils.addBusinessDaysToDate(startDate, t.getDurationLong() - 1); // Remember duration of 1 finishes same day
+				if (UserConfig.getInstance().getNotify().doNotification(startDate, endDate, now))
+				{
+					result.add(t);
+				}
+			}
+		});
+		return result;
 	}
 }
